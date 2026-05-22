@@ -88,3 +88,30 @@ describe("Tests API Eco Bliss Bath", () => {
     });
   });
 });
+
+it("Doit retourner une erreur 403 lors d'une demande d'accès à des données confidentielles sans autorisation", () => {
+  cy.request({
+    method: "GET",
+    url: "http://localhost:8081/orders",
+    failOnStatusCode: false,
+  }).then((response) => {
+    expect(response.status).to.eq(403);
+  });
+});
+
+it("Ne doit pas ajouter un produit en rupture de stock au panier", () => {
+  cy.request({
+    method: "POST",
+    url: "http://localhost:8081/orders/add",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: {
+      product: 3,
+      quantity: 999,
+    },
+    failOnStatusCode: false,
+  }).then((response) => {
+    expect(response.status).to.not.eq(200);
+  });
+});
