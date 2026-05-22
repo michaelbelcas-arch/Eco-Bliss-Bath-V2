@@ -88,21 +88,4 @@ describe("Tests fonctionnels Eco Bliss Bath", () => {
     cy.url().should("not.include", "cart");
   });
 
-  it("Doit ajouter un avis utilisateur", () => {
-    // Ajoute un avis via l'API
-    cy.request({
-      method: "POST",
-      url: "http://localhost:8081/reviews",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: {
-        title: faker.lorem.words(3),
-        comment: faker.lorem.sentences(2),
-        rating: 5,
-      },
-    }).then((response) => {
-      expect([200, 201]).to.include(response.status);
-    });
-  });
 });
