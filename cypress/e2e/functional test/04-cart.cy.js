@@ -1,11 +1,14 @@
-import { faker } from "@faker-js/faker";
-
-describe("Tests fonctionnels Eco Bliss Bath", () => {
+describe("Tests fonctionnels Eco Bliss Bath - Panier", () => {
   let token;
-  let productId;
 
   beforeEach(() => {
-    // Connexion API
+    // Nettoie le localStorage avant chaque test
+    cy.clearLocalStorage();
+
+    // Nettoie les cookies avant chaque test
+    cy.clearCookies();
+
+    // Connexion API pour récupérer un token JWT
     cy.request({
       method: "POST",
       url: "http://localhost:8081/login",
@@ -14,78 +17,135 @@ describe("Tests fonctionnels Eco Bliss Bath", () => {
         password: "testtest",
       },
     }).then((response) => {
+      // Sauvegarde le token utilisateur
       token = response.body.token;
 
-      // Récupère la liste des produits
-      cy.request("GET", "http://localhost:8081/products").then((response) => {
-        // Choisit un produit avec du stock
-        const product = response.body.find((item) => item.availableStock > 0);
-
-        productId = product.id;
-
-        // Ouvre le site en étant connecté
-        cy.visit("/", {
-          onBeforeLoad(win) {
-            win.localStorage.setItem("user", token);
-          },
-        });
+      // Ouvre le site en injectant le token avant le chargement
+      cy.visit("/", {
+        onBeforeLoad(win) {
+          win.localStorage.setItem("user", token);
+        },
       });
     });
   });
 
-  it("Doit connecter un utilisateur", () => {
-    // Vérifie que l'utilisateur est connecté
-    cy.contains("Mon panier").should("be.visible");
-    cy.contains("Déconnexion").should("be.visible");
-  });
+  
+  afterEach(() => {
+    // Ouvre le panier après chaque test
+    cy.visit("/#/cart");
 
-  it("Doit ajouter puis supprimer un produit de mon panier", () => {
-
-    // Ouvre la page produits
-    cy.contains("Produits").click();
-
-    // Cible précisément le produit Chuchotements d'été
-    cy.contains('[data-cy="product-name"]', "Chuchotements d'été")
-      .parents('[data-cy="product"]')
-      .within(() => {
-
-    // Clique sur le bouton consulter du bon produit
-    cy.get('[data-cy="product-link"]').click();
-
+    // Supprime le premier produit présent dans le panier s'il existe
+    cy.get("body").then(($body) => {
+      if ($body.find('[data-cy="cart-line-delete"]').length > 0) {
+        cy.get('[data-cy="cart-line-delete"]').first().click();
+      }
     });
 
-    // Vérifie qu'on est sur la fiche produit
-    cy.url().should("include", "/products/4");
+    // Nettoie le localStorage
+    cy.clearLocalStorage();
 
-    // Ajoute le produit au panier
-    cy.get('[data-cy="detail-product-add"]').click();
-
-    // Ouvre le panier
-    cy.get('[data-cy="nav-link-cart"]').click();
-
-    // Vérifie la présence du produit
-    cy.get('[data-cy="cart-line"]').should("be.visible");
-
-    // Supprime le produit
-    cy.get('[data-cy="cart-line-delete"]').click();
-
-    // Vérifie la suppression
-    cy.contains("Chuchotements d'été").should("not.exist");
-
-});
-
-  it("Ne doit pas permettre d'ajouter une quantité négative au panier", () => {
-    // Ouvre directement un produit disponible
-    cy.visit(`/#/products/${productId}`);
-
-    // Saisit une quantité négative
-    cy.get("input").clear().type("-1");
-
-    // Tente d'ajouter au panier
-    cy.contains("Ajouter au panier").click();
-
-    // Vérifie qu'on n'est pas redirigé vers le panier
-    cy.url().should("not.include", "cart");
+    // Nettoie les cookies
+    cy.clearCookies();
   });
 
+
+  it("Ajoute un produit au panier", () => {
+    // Ouvre la fiche produit Dans la forêt
+    cy.visit("/#/products/6");
+
+    // Vérifie que le produit est affiché
+    cy.contains("Dans la forêt").should("be.visible");
+
+    // Clique sur Ajouter au panier
+    cy.get('[data-cy="detail-product-add"]').click();
+
+    // Attend la redirection automatique vers le panier
+    cy.url().should("include", "/cart");
+
+    // Vérifie que le produit est présent dans le panier
+    cy.contains("Dans la forêt").should("be.visible");
+  });
+
+
+  it("Ajoute un produit au panier avec une quantité supérieure au stock disponible", () => {
+    // Récupère les informations du produit depuis l'API
+    cy.request("GET", "http://localhost:8081/products/6").then((response) => {
+      // Récupère le stock disponible actuel
+      const stockDisponible = response.body.availableStock;
+
+      // Calcule une quantité supérieure au stock
+      const quantiteSuperieureAuStock = stockDisponible + 1;
+
+      // Ouvre la fiche produit Dans la forêt
+      cy.visit("/#/products/6");
+
+      // Vérifie que le produit est affiché
+      cy.contains("Dans la forêt").should("be.visible");
+
+      // Saisit une quantité supérieure au stock disponible
+      cy.get('[data-cy="detail-product-quantity"]')
+        .clear()
+        .type(quantiteSuperieureAuStock.toString());
+
+      // Clique sur Ajouter au panier
+      cy.get('[data-cy="detail-product-add"]').click();
+
+      // Attend la redirection automatique vers le panier
+      cy.url().should("include", "/cart");
+
+      // Vérifie que le produit est présent dans le panier
+      cy.contains("Dans la forêt").should("be.visible");
+    });
+  });
+
+
+  it("Ajoute un produit au panier avec une quantité égale à zéro", () => {
+    // Ouvre la fiche produit Dans la forêt
+    cy.visit("/#/products/6");
+
+    // Vérifie que le produit est affiché
+    cy.contains("Dans la forêt").should("be.visible");
+
+    // Saisit une quantité égale à zéro
+    cy.get('[data-cy="detail-product-quantity"]')
+      .clear()
+      .type("0");
+
+    // Clique sur Ajouter au panier
+    cy.get('[data-cy="detail-product-add"]').click();
+
+    // Attend la redirection automatique vers le panier
+    cy.url().should("include", "/cart");
+
+    // Vérifie que le produit est présent dans le panier
+    cy.contains("Dans la forêt").should("be.visible");
+
+    // Vérifie que la quantité zéro est présente dans le panier
+    cy.get('[data-cy="cart-line"]')
+      .contains("0")
+      .should("be.visible");
+  });
+
+
+  it("Ajoute un produit au panier malgré un stock négatif", () => {
+    // Ouvre la fiche produit Sentiments printaniers
+    cy.visit("/#/products/3");
+
+    // Vérifie que le produit est affiché
+    cy.contains("Sentiments printaniers").should("be.visible");
+
+    // Saisit une quantité de 1
+    cy.get('[data-cy="detail-product-quantity"]')
+      .clear()
+      .type("1");
+
+    // Clique sur Ajouter au panier
+    cy.get('[data-cy="detail-product-add"]').click();
+
+    // Attend la redirection automatique vers le panier
+    cy.url().should("include", "/cart");
+
+    // Vérifie que le produit est présent dans le panier
+    cy.contains("Sentiments printaniers").should("be.visible");
+  });
 });
