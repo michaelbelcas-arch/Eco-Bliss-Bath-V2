@@ -1,299 +1,189 @@
+# Présentation
 
-<div align="center">
+Eco Bliss Bath est une application e-commerce de produits de bien-être.
 
-# OpenClassrooms - Eco Bliss Bath
+Ce projet a pour objectif d’automatiser plusieurs scénarios de test avec Cypress afin de vérifier :
 
-Projet d'automatisation de tests E2E avec Cypress
+- le bon fonctionnement de l’API ;
+- les fonctionnalités principales du site ;
+- la connexion utilisateur ;
+- la gestion du panier ;
+- la sécurité face aux injections XSS.
 
-</div>
-
-<p align="center">
-    <img src="https://img.shields.io/badge/MariaDB-v11.7.2-blue">
-    <img src="https://img.shields.io/badge/Symfony-v6.2-blue">
-    <img src="https://img.shields.io/badge/Angular-v13.3.0-blue">
-    <img src="https://img.shields.io/badge/Cypress-E2E-brightgreen">
-    <img src="https://img.shields.io/badge/docker--build-passing-brightgreen">
-</p>
-
----
-
-# Présentation du projet
-
-Eco Bliss Bath est une application e-commerce permettant la consultation et l’achat de produits de bien-être.
-
-Ce projet a pour objectif de mettre en place une stratégie complète de tests automatisés avec Cypress afin de :
-
-- sécuriser l'application
-- automatiser les scénarios utilisateurs
-- tester l’API backend
-- détecter les régressions
-- vérifier les fonctionnalités critiques
-- identifier les failles de sécurité potentielles
-
----
-
-# Technologies utilisées
-
-## Frontend
-- Angular 13
-
-## Backend
-- Symfony 6.2
-- API REST
-
-## Base de données
-- MariaDB
-
-## Tests automatisés
-- Cypress
-- Faker
-
-## Environnement
-- Docker
-- NodeJS
-
----
 
 # Prérequis
 
-Pour démarrer l’application, vous devez installer :
+Avant de lancer le projet, vous devez avoir installé :
 
 - Docker
 - NodeJS
+- npm
 
----
+# Installation
 
-# Installation et démarrage
+Cloner le projet :
 
-## 1. Cloner le projet
-
-```bash
 git clone https://github.com/OpenClassrooms-Student-Center/Eco-Bliss-Bath-V2.git
-
 cd Eco-Bliss-Bath-V2
-````
 
----
+Démarrer le backend
 
-# Démarrage du backend + base de données
+À la racine du projet :
 
-Lancer les containers Docker :
-
-```bash
 docker compose up -d
-```
 
----
+L’API est disponible sur :
 
-# Démarrage du frontend
+http://localhost:8081
+
+Démarrer le frontend
 
 Se rendre dans le dossier frontend :
 
-```bash
-cd ./frontend
-```
+cd frontend
 
 Installer les dépendances :
 
-```bash
 npm install
-```
 
-Démarrer l’application Angular :
+Lancer l’application :
 
-```bash
 npm run start
-```
 
-Le frontend sera accessible à l’adresse :
+Le site est disponible sur :
 
-```txt
 http://localhost:4200
-```
 
----
-
-# Lancer Cypress
+Lancer les tests Cypress
 
 Depuis la racine du projet :
 
-```bash
 npx cypress open
-```
 
 Puis sélectionner :
 
-```txt
 E2E Testing
-```
 
----
+Lancer ensuite les fichiers de test souhaités.
 
-# Structure des tests
-
-```txt
+Structure des tests
 cypress/e2e/
 │
 ├── 01-api.cy.js
 ├── 02-smoke.cy.js
-└── 03-xss.cy.js
-└── functional test
+├── 03-xss.cy.js
+└── functional test/
     ├── 04-cart.cy.js
     └── 05-login.cy.js
-```
 
----
+Description des tests
 
-# Description des tests
-
-# 1. Tests API
-
-Fichier :
-
-```txt
 01-api.cy.js
-```
 
-Ces tests permettent de tester directement le backend sans passer par l’interface graphique.
+Tests API réalisés directement sur le backend.
 
-## Vérifications effectuées
+Vérifications principales :
 
-* connexion utilisateur
-* récupération du panier
-* récupération d’un produit
-* ajout d’un produit au panier
-* ajout d’un avis
-* gestion des erreurs 401
+connexion utilisateur ;
+récupération d’un token JWT ;
+accès au panier avec token ;
+récupération d’une fiche produit ;
+ajout d’un produit au panier ;
+ajout d’un avis ;
+contrôle d’accès sans autorisation.
 
----
-
-# 2. Smoke Tests
-
-Fichier :
-
-```txt
 02-smoke.cy.js
-```
 
-Les smoke tests permettent de vérifier rapidement que les fonctionnalités principales du site sont accessibles.
+Tests rapides permettant de vérifier que le site démarre correctement.
 
-## Vérifications effectuées
+Vérifications principales :
 
-* affichage du bouton connexion
-* accès à la section produits
-* affichage des boutons consulter
-* affichage des produits
+affichage de la page d’accueil ;
+accès à la page produits ;
+affichage des produits ;
+présence des boutons “Consulter” ;
+navigation principale.
 
----
-
-# 3. Tests XSS
-
-Fichier :
-
-```txt
 03-xss.cy.js
-```
 
-Ces tests permettent de vérifier la sécurité de l’application contre les injections XSS.
+Tests de sécurité contre les injections XSS.
 
-## Exemple de payload testé
+Payload utilisé :
 
-```html
 <script>alert("XSS")</script>
-```
 
-## Objectif
+Scénarios testés :
 
-Vérifier que les balises `<script>` ne sont pas acceptées par le backend.
+injection XSS dans les avis ;
+injection XSS dans les champs du panier.
 
----
+Le test vérifie qu’aucune alerte JavaScript ne s’exécute.
 
-# 4. Tests fonctionnels
+04-cart.cy.js
 
-Fichier :
+Tests fonctionnels du panier.
 
-```txt
-04-functional.cy.js
-```
+Scénarios testés :
 
-Ces tests reproduisent le comportement réel d’un utilisateur connecté.
+connexion utilisateur ;
+ajout d’un produit au panier ;
+suppression d’un produit du panier ;
+ajout d’une quantité supérieure au stock disponible ;
+ajout d’une quantité égale à zéro ;
+ajout d’un produit avec stock négatif.
 
-## Vérifications effectuées
+Un afterEach() permet de nettoyer le panier après chaque test.
 
-* connexion utilisateur
-* authentification JWT
-* sauvegarde du token dans le localStorage
-* ajout d’un produit au panier
-* accès au panier
+05-login.cy.js
 
----
+Tests fonctionnels de connexion.
 
-# Utilisation de Faker
+Scénarios testés :
 
-La librairie Faker est utilisée afin de générer automatiquement des données de test dynamiques :
+connexion avec identifiants valides ;
+connexion avec email invalide ;
+connexion avec mot de passe invalide ;
+connexion avec données générées par Faker ;
+déconnexion utilisateur.
+Utilisation de Faker
 
-* commentaires
-* emails
-* données utilisateurs
-* textes aléatoires
+Faker est utilisé pour générer des données dynamiques dans certains tests :
 
-Exemple :
-
-```js
-faker.lorem.sentence()
-```
-
-Cette approche permet :
-
-* d’éviter les données statiques
-* de rendre les tests plus réalistes
-* de limiter les conflits entre tests
-
----
-
-# Authentification JWT
-
-L’application utilise un système d’authentification JWT.
-
-Après connexion :
-
-* le backend génère un token
-* le frontend stocke ce token dans le localStorage
+emails ;
+mots de passe ;
+titres ;
+commentaires.
 
 Exemple :
 
-```js
-localStorage.setItem("user", token)
-```
+faker.internet.email()
+Authentification JWT
 
-Les tests Cypress injectent automatiquement ce token afin de simuler un utilisateur connecté.
+Certains tests utilisent une connexion API afin de récupérer un token JWT.
 
----
+Le token est ensuite injecté dans le localStorage pour simuler un utilisateur connecté :
 
-# Difficultés rencontrées
+win.localStorage.setItem("user", token)
+Remarques
 
-Plusieurs problématiques ont été rencontrées durant le projet :
+Certains tests permettent de mettre en évidence des anomalies fonctionnelles, notamment sur la gestion du panier :
 
-* gestion des sélecteurs Cypress
-* contenu dynamique Angular
-* synchronisation des requêtes API
-* gestion du JWT
-* stockage du token dans le localStorage
-* éléments non visibles dans le DOM
-* mise en place des tests XSS
+ajout d’une quantité supérieure au stock ;
+ajout d’une quantité égale à zéro ;
+ajout d’un produit avec stock négatif.
 
----
+Ces comportements sont documentés dans le bilan de campagne de test.
 
-# Compétences développées
+Commandes utiles
 
-* automatisation de tests E2E
-* tests API
-* tests fonctionnels
-* tests de sécurité
-* utilisation de Cypress
-* debugging frontend/backend
-* gestion de JWT
-* utilisation du localStorage
-* génération de données avec Faker
+Relancer le backend proprement :
 
----
+docker compose down
+docker compose up -d
+
+Réinitialiser complètement la base Docker :
+
+docker compose down -v
+docker compose up -d
+
+Attention : la commande avec -v supprime les volumes Docker.
