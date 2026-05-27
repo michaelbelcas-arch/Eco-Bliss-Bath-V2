@@ -136,8 +136,10 @@ cypress/e2e/
 │
 ├── 01-api.cy.js
 ├── 02-smoke.cy.js
-├── 03-xss.cy.js
-└── 04-functional.cy.js
+└── 03-xss.cy.js
+└── functional test
+    ├── 04-cart.cy.js
+    └── 04-login.cy.js
 ```
 
 ---
