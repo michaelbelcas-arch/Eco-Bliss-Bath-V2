@@ -139,7 +139,7 @@ cypress/e2e/
 └── 03-xss.cy.js
 └── functional test
     ├── 04-cart.cy.js
-    └── 04-login.cy.js
+    └── 05-login.cy.js
 ```
 
 ---
